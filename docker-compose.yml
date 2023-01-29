@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  logn2:
+  logn:
     build:
       context: .
     container_name: logn
@@ -35,5 +35,5 @@ networks:
     driver: bridge
 
 volumes:
-  logn2:
+  logn:
   postgres:
