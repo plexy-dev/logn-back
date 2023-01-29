@@ -2,24 +2,28 @@ package main
 
 import (
 	"context"
-	_ "github.com/jackc/pgx/v5"
-	"github.com/logn-soft/logn-back/internal/ent"
+	"database/sql"
 	"log"
 	"net/http"
+
+	"entgo.io/ent/dialect"
+	entsql "entgo.io/ent/dialect/sql"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/logn-soft/logn-back/internal/ent"
 )
 
 func main() {
 	dsn := "postgresql://root:secret@postgres:5432/logn2?sslmode=disable"
-	client, err := ent.Open("postgres", dsn)
+	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		log.Fatalf("cant connect to db %v", err)
 	}
-	defer func(client *ent.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Fatalf("failed opening connection to db: %v", err)
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Fatalf("failed closing connection to db: %v", err)
 		}
-	}(client)
+	}()
+	client := ent.NewClient(ent.Driver(entsql.OpenDB(dialect.Postgres, db)))
 
 	err = client.Schema.Create(context.Background())
 	if err != nil {
