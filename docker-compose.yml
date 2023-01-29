@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  logn:
+    build:
+      context: .
+    container_name: logn
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    container_name: postgres
+    image: postgres:14
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: logn
+    volumes:
+      - postgres:/var/lib/postgres
+    ports:
+      - "5432:5432"
+    expose:
+      - "5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+  logn:
+  postgres:
