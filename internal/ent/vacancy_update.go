@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/logn-soft/logn-back/internal/ent/area"
+	"github.com/logn-soft/logn-back/internal/ent/company"
 	"github.com/logn-soft/logn-back/internal/ent/location"
 	"github.com/logn-soft/logn-back/internal/ent/predicate"
 	"github.com/logn-soft/logn-back/internal/ent/technology"
@@ -154,6 +155,21 @@ func (vu *VacancyUpdate) AddAreas(a ...*Area) *VacancyUpdate {
 	return vu.AddAreaIDs(ids...)
 }
 
+// AddCompanyIDs adds the "companies" edge to the Company entity by IDs.
+func (vu *VacancyUpdate) AddCompanyIDs(ids ...int) *VacancyUpdate {
+	vu.mutation.AddCompanyIDs(ids...)
+	return vu
+}
+
+// AddCompanies adds the "companies" edges to the Company entity.
+func (vu *VacancyUpdate) AddCompanies(c ...*Company) *VacancyUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return vu.AddCompanyIDs(ids...)
+}
+
 // AddTechnologyLevelIDs adds the "technology_levels" edge to the TechnologyLevel entity by IDs.
 func (vu *VacancyUpdate) AddTechnologyLevelIDs(ids ...int) *VacancyUpdate {
 	vu.mutation.AddTechnologyLevelIDs(ids...)
@@ -235,6 +251,27 @@ func (vu *VacancyUpdate) RemoveAreas(a ...*Area) *VacancyUpdate {
 		ids[i] = a[i].ID
 	}
 	return vu.RemoveAreaIDs(ids...)
+}
+
+// ClearCompanies clears all "companies" edges to the Company entity.
+func (vu *VacancyUpdate) ClearCompanies() *VacancyUpdate {
+	vu.mutation.ClearCompanies()
+	return vu
+}
+
+// RemoveCompanyIDs removes the "companies" edge to Company entities by IDs.
+func (vu *VacancyUpdate) RemoveCompanyIDs(ids ...int) *VacancyUpdate {
+	vu.mutation.RemoveCompanyIDs(ids...)
+	return vu
+}
+
+// RemoveCompanies removes "companies" edges to Company entities.
+func (vu *VacancyUpdate) RemoveCompanies(c ...*Company) *VacancyUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return vu.RemoveCompanyIDs(ids...)
 }
 
 // ClearTechnologyLevels clears all "technology_levels" edges to the TechnologyLevel entity.
@@ -533,6 +570,60 @@ func (vu *VacancyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if vu.mutation.CompaniesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   vacancy.CompaniesTable,
+			Columns: vacancy.CompaniesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: company.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := vu.mutation.RemovedCompaniesIDs(); len(nodes) > 0 && !vu.mutation.CompaniesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   vacancy.CompaniesTable,
+			Columns: vacancy.CompaniesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: company.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := vu.mutation.CompaniesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   vacancy.CompaniesTable,
+			Columns: vacancy.CompaniesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: company.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if vu.mutation.TechnologyLevelsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -729,6 +820,21 @@ func (vuo *VacancyUpdateOne) AddAreas(a ...*Area) *VacancyUpdateOne {
 	return vuo.AddAreaIDs(ids...)
 }
 
+// AddCompanyIDs adds the "companies" edge to the Company entity by IDs.
+func (vuo *VacancyUpdateOne) AddCompanyIDs(ids ...int) *VacancyUpdateOne {
+	vuo.mutation.AddCompanyIDs(ids...)
+	return vuo
+}
+
+// AddCompanies adds the "companies" edges to the Company entity.
+func (vuo *VacancyUpdateOne) AddCompanies(c ...*Company) *VacancyUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return vuo.AddCompanyIDs(ids...)
+}
+
 // AddTechnologyLevelIDs adds the "technology_levels" edge to the TechnologyLevel entity by IDs.
 func (vuo *VacancyUpdateOne) AddTechnologyLevelIDs(ids ...int) *VacancyUpdateOne {
 	vuo.mutation.AddTechnologyLevelIDs(ids...)
@@ -810,6 +916,27 @@ func (vuo *VacancyUpdateOne) RemoveAreas(a ...*Area) *VacancyUpdateOne {
 		ids[i] = a[i].ID
 	}
 	return vuo.RemoveAreaIDs(ids...)
+}
+
+// ClearCompanies clears all "companies" edges to the Company entity.
+func (vuo *VacancyUpdateOne) ClearCompanies() *VacancyUpdateOne {
+	vuo.mutation.ClearCompanies()
+	return vuo
+}
+
+// RemoveCompanyIDs removes the "companies" edge to Company entities by IDs.
+func (vuo *VacancyUpdateOne) RemoveCompanyIDs(ids ...int) *VacancyUpdateOne {
+	vuo.mutation.RemoveCompanyIDs(ids...)
+	return vuo
+}
+
+// RemoveCompanies removes "companies" edges to Company entities.
+func (vuo *VacancyUpdateOne) RemoveCompanies(c ...*Company) *VacancyUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return vuo.RemoveCompanyIDs(ids...)
 }
 
 // ClearTechnologyLevels clears all "technology_levels" edges to the TechnologyLevel entity.
@@ -1124,6 +1251,60 @@ func (vuo *VacancyUpdateOne) sqlSave(ctx context.Context) (_node *Vacancy, err e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: area.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if vuo.mutation.CompaniesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   vacancy.CompaniesTable,
+			Columns: vacancy.CompaniesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: company.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := vuo.mutation.RemovedCompaniesIDs(); len(nodes) > 0 && !vuo.mutation.CompaniesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   vacancy.CompaniesTable,
+			Columns: vacancy.CompaniesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: company.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := vuo.mutation.CompaniesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   vacancy.CompaniesTable,
+			Columns: vacancy.CompaniesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: company.FieldID,
 				},
 			},
 		}

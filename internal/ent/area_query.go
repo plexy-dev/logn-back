@@ -12,6 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/logn-soft/logn-back/internal/ent/area"
+	"github.com/logn-soft/logn-back/internal/ent/community"
+	"github.com/logn-soft/logn-back/internal/ent/company"
 	"github.com/logn-soft/logn-back/internal/ent/predicate"
 	"github.com/logn-soft/logn-back/internal/ent/vacancy"
 )
@@ -19,11 +21,13 @@ import (
 // AreaQuery is the builder for querying Area entities.
 type AreaQuery struct {
 	config
-	ctx           *QueryContext
-	order         []OrderFunc
-	inters        []Interceptor
-	predicates    []predicate.Area
-	withVacancies *VacancyQuery
+	ctx             *QueryContext
+	order           []OrderFunc
+	inters          []Interceptor
+	predicates      []predicate.Area
+	withVacancies   *VacancyQuery
+	withCompanies   *CompanyQuery
+	withCommunities *CommunityQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -75,6 +79,50 @@ func (aq *AreaQuery) QueryVacancies() *VacancyQuery {
 			sqlgraph.From(area.Table, area.FieldID, selector),
 			sqlgraph.To(vacancy.Table, vacancy.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, area.VacanciesTable, area.VacanciesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCompanies chains the current query on the "companies" edge.
+func (aq *AreaQuery) QueryCompanies() *CompanyQuery {
+	query := (&CompanyClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(area.Table, area.FieldID, selector),
+			sqlgraph.To(company.Table, company.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, area.CompaniesTable, area.CompaniesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCommunities chains the current query on the "communities" edge.
+func (aq *AreaQuery) QueryCommunities() *CommunityQuery {
+	query := (&CommunityClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(area.Table, area.FieldID, selector),
+			sqlgraph.To(community.Table, community.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, area.CommunitiesTable, area.CommunitiesPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -267,12 +315,14 @@ func (aq *AreaQuery) Clone() *AreaQuery {
 		return nil
 	}
 	return &AreaQuery{
-		config:        aq.config,
-		ctx:           aq.ctx.Clone(),
-		order:         append([]OrderFunc{}, aq.order...),
-		inters:        append([]Interceptor{}, aq.inters...),
-		predicates:    append([]predicate.Area{}, aq.predicates...),
-		withVacancies: aq.withVacancies.Clone(),
+		config:          aq.config,
+		ctx:             aq.ctx.Clone(),
+		order:           append([]OrderFunc{}, aq.order...),
+		inters:          append([]Interceptor{}, aq.inters...),
+		predicates:      append([]predicate.Area{}, aq.predicates...),
+		withVacancies:   aq.withVacancies.Clone(),
+		withCompanies:   aq.withCompanies.Clone(),
+		withCommunities: aq.withCommunities.Clone(),
 		// clone intermediate query.
 		sql:  aq.sql.Clone(),
 		path: aq.path,
@@ -287,6 +337,28 @@ func (aq *AreaQuery) WithVacancies(opts ...func(*VacancyQuery)) *AreaQuery {
 		opt(query)
 	}
 	aq.withVacancies = query
+	return aq
+}
+
+// WithCompanies tells the query-builder to eager-load the nodes that are connected to
+// the "companies" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *AreaQuery) WithCompanies(opts ...func(*CompanyQuery)) *AreaQuery {
+	query := (&CompanyClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withCompanies = query
+	return aq
+}
+
+// WithCommunities tells the query-builder to eager-load the nodes that are connected to
+// the "communities" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *AreaQuery) WithCommunities(opts ...func(*CommunityQuery)) *AreaQuery {
+	query := (&CommunityClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withCommunities = query
 	return aq
 }
 
@@ -368,8 +440,10 @@ func (aq *AreaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Area, e
 	var (
 		nodes       = []*Area{}
 		_spec       = aq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [3]bool{
 			aq.withVacancies != nil,
+			aq.withCompanies != nil,
+			aq.withCommunities != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -394,6 +468,20 @@ func (aq *AreaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Area, e
 		if err := aq.loadVacancies(ctx, query, nodes,
 			func(n *Area) { n.Edges.Vacancies = []*Vacancy{} },
 			func(n *Area, e *Vacancy) { n.Edges.Vacancies = append(n.Edges.Vacancies, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withCompanies; query != nil {
+		if err := aq.loadCompanies(ctx, query, nodes,
+			func(n *Area) { n.Edges.Companies = []*Company{} },
+			func(n *Area, e *Company) { n.Edges.Companies = append(n.Edges.Companies, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withCommunities; query != nil {
+		if err := aq.loadCommunities(ctx, query, nodes,
+			func(n *Area) { n.Edges.Communities = []*Community{} },
+			func(n *Area, e *Community) { n.Edges.Communities = append(n.Edges.Communities, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -454,6 +542,128 @@ func (aq *AreaQuery) loadVacancies(ctx context.Context, query *VacancyQuery, nod
 		nodes, ok := nids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected "vacancies" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (aq *AreaQuery) loadCompanies(ctx context.Context, query *CompanyQuery, nodes []*Area, init func(*Area), assign func(*Area, *Company)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Area)
+	nids := make(map[int]map[*Area]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(area.CompaniesTable)
+		s.Join(joinT).On(s.C(company.FieldID), joinT.C(area.CompaniesPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(area.CompaniesPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(area.CompaniesPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Area]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Company](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "companies" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (aq *AreaQuery) loadCommunities(ctx context.Context, query *CommunityQuery, nodes []*Area, init func(*Area), assign func(*Area, *Community)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Area)
+	nids := make(map[int]map[*Area]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(area.CommunitiesTable)
+		s.Join(joinT).On(s.C(community.FieldID), joinT.C(area.CommunitiesPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(area.CommunitiesPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(area.CommunitiesPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Area]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Community](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "communities" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)

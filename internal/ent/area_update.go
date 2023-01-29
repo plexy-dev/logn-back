@@ -12,6 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/logn-soft/logn-back/internal/ent/area"
+	"github.com/logn-soft/logn-back/internal/ent/community"
+	"github.com/logn-soft/logn-back/internal/ent/company"
 	"github.com/logn-soft/logn-back/internal/ent/predicate"
 	"github.com/logn-soft/logn-back/internal/ent/vacancy"
 )
@@ -64,6 +66,36 @@ func (au *AreaUpdate) AddVacancies(v ...*Vacancy) *AreaUpdate {
 	return au.AddVacancyIDs(ids...)
 }
 
+// AddCompanyIDs adds the "companies" edge to the Company entity by IDs.
+func (au *AreaUpdate) AddCompanyIDs(ids ...int) *AreaUpdate {
+	au.mutation.AddCompanyIDs(ids...)
+	return au
+}
+
+// AddCompanies adds the "companies" edges to the Company entity.
+func (au *AreaUpdate) AddCompanies(c ...*Company) *AreaUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return au.AddCompanyIDs(ids...)
+}
+
+// AddCommunityIDs adds the "communities" edge to the Community entity by IDs.
+func (au *AreaUpdate) AddCommunityIDs(ids ...int) *AreaUpdate {
+	au.mutation.AddCommunityIDs(ids...)
+	return au
+}
+
+// AddCommunities adds the "communities" edges to the Community entity.
+func (au *AreaUpdate) AddCommunities(c ...*Community) *AreaUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return au.AddCommunityIDs(ids...)
+}
+
 // Mutation returns the AreaMutation object of the builder.
 func (au *AreaUpdate) Mutation() *AreaMutation {
 	return au.mutation
@@ -88,6 +120,48 @@ func (au *AreaUpdate) RemoveVacancies(v ...*Vacancy) *AreaUpdate {
 		ids[i] = v[i].ID
 	}
 	return au.RemoveVacancyIDs(ids...)
+}
+
+// ClearCompanies clears all "companies" edges to the Company entity.
+func (au *AreaUpdate) ClearCompanies() *AreaUpdate {
+	au.mutation.ClearCompanies()
+	return au
+}
+
+// RemoveCompanyIDs removes the "companies" edge to Company entities by IDs.
+func (au *AreaUpdate) RemoveCompanyIDs(ids ...int) *AreaUpdate {
+	au.mutation.RemoveCompanyIDs(ids...)
+	return au
+}
+
+// RemoveCompanies removes "companies" edges to Company entities.
+func (au *AreaUpdate) RemoveCompanies(c ...*Company) *AreaUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return au.RemoveCompanyIDs(ids...)
+}
+
+// ClearCommunities clears all "communities" edges to the Community entity.
+func (au *AreaUpdate) ClearCommunities() *AreaUpdate {
+	au.mutation.ClearCommunities()
+	return au
+}
+
+// RemoveCommunityIDs removes the "communities" edge to Community entities by IDs.
+func (au *AreaUpdate) RemoveCommunityIDs(ids ...int) *AreaUpdate {
+	au.mutation.RemoveCommunityIDs(ids...)
+	return au
+}
+
+// RemoveCommunities removes "communities" edges to Community entities.
+func (au *AreaUpdate) RemoveCommunities(c ...*Community) *AreaUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return au.RemoveCommunityIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -208,6 +282,114 @@ func (au *AreaUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if au.mutation.CompaniesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   area.CompaniesTable,
+			Columns: area.CompaniesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: company.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedCompaniesIDs(); len(nodes) > 0 && !au.mutation.CompaniesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   area.CompaniesTable,
+			Columns: area.CompaniesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: company.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.CompaniesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   area.CompaniesTable,
+			Columns: area.CompaniesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: company.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if au.mutation.CommunitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   area.CommunitiesTable,
+			Columns: area.CommunitiesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: community.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedCommunitiesIDs(); len(nodes) > 0 && !au.mutation.CommunitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   area.CommunitiesTable,
+			Columns: area.CommunitiesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: community.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.CommunitiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   area.CommunitiesTable,
+			Columns: area.CommunitiesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: community.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{area.Label}
@@ -263,6 +445,36 @@ func (auo *AreaUpdateOne) AddVacancies(v ...*Vacancy) *AreaUpdateOne {
 	return auo.AddVacancyIDs(ids...)
 }
 
+// AddCompanyIDs adds the "companies" edge to the Company entity by IDs.
+func (auo *AreaUpdateOne) AddCompanyIDs(ids ...int) *AreaUpdateOne {
+	auo.mutation.AddCompanyIDs(ids...)
+	return auo
+}
+
+// AddCompanies adds the "companies" edges to the Company entity.
+func (auo *AreaUpdateOne) AddCompanies(c ...*Company) *AreaUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return auo.AddCompanyIDs(ids...)
+}
+
+// AddCommunityIDs adds the "communities" edge to the Community entity by IDs.
+func (auo *AreaUpdateOne) AddCommunityIDs(ids ...int) *AreaUpdateOne {
+	auo.mutation.AddCommunityIDs(ids...)
+	return auo
+}
+
+// AddCommunities adds the "communities" edges to the Community entity.
+func (auo *AreaUpdateOne) AddCommunities(c ...*Community) *AreaUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return auo.AddCommunityIDs(ids...)
+}
+
 // Mutation returns the AreaMutation object of the builder.
 func (auo *AreaUpdateOne) Mutation() *AreaMutation {
 	return auo.mutation
@@ -287,6 +499,48 @@ func (auo *AreaUpdateOne) RemoveVacancies(v ...*Vacancy) *AreaUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return auo.RemoveVacancyIDs(ids...)
+}
+
+// ClearCompanies clears all "companies" edges to the Company entity.
+func (auo *AreaUpdateOne) ClearCompanies() *AreaUpdateOne {
+	auo.mutation.ClearCompanies()
+	return auo
+}
+
+// RemoveCompanyIDs removes the "companies" edge to Company entities by IDs.
+func (auo *AreaUpdateOne) RemoveCompanyIDs(ids ...int) *AreaUpdateOne {
+	auo.mutation.RemoveCompanyIDs(ids...)
+	return auo
+}
+
+// RemoveCompanies removes "companies" edges to Company entities.
+func (auo *AreaUpdateOne) RemoveCompanies(c ...*Company) *AreaUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return auo.RemoveCompanyIDs(ids...)
+}
+
+// ClearCommunities clears all "communities" edges to the Community entity.
+func (auo *AreaUpdateOne) ClearCommunities() *AreaUpdateOne {
+	auo.mutation.ClearCommunities()
+	return auo
+}
+
+// RemoveCommunityIDs removes the "communities" edge to Community entities by IDs.
+func (auo *AreaUpdateOne) RemoveCommunityIDs(ids ...int) *AreaUpdateOne {
+	auo.mutation.RemoveCommunityIDs(ids...)
+	return auo
+}
+
+// RemoveCommunities removes "communities" edges to Community entities.
+func (auo *AreaUpdateOne) RemoveCommunities(c ...*Community) *AreaUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return auo.RemoveCommunityIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -423,6 +677,114 @@ func (auo *AreaUpdateOne) sqlSave(ctx context.Context) (_node *Area, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: vacancy.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.CompaniesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   area.CompaniesTable,
+			Columns: area.CompaniesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: company.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedCompaniesIDs(); len(nodes) > 0 && !auo.mutation.CompaniesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   area.CompaniesTable,
+			Columns: area.CompaniesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: company.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.CompaniesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   area.CompaniesTable,
+			Columns: area.CompaniesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: company.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.CommunitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   area.CommunitiesTable,
+			Columns: area.CommunitiesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: community.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedCommunitiesIDs(); len(nodes) > 0 && !auo.mutation.CommunitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   area.CommunitiesTable,
+			Columns: area.CommunitiesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: community.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.CommunitiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   area.CommunitiesTable,
+			Columns: area.CommunitiesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: community.FieldID,
 				},
 			},
 		}

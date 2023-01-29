@@ -197,6 +197,60 @@ func HasVacanciesWith(preds ...predicate.Vacancy) predicate.Area {
 	})
 }
 
+// HasCompanies applies the HasEdge predicate on the "companies" edge.
+func HasCompanies() predicate.Area {
+	return predicate.Area(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, CompaniesTable, CompaniesPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCompaniesWith applies the HasEdge predicate on the "companies" edge with a given conditions (other predicates).
+func HasCompaniesWith(preds ...predicate.Company) predicate.Area {
+	return predicate.Area(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CompaniesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, CompaniesTable, CompaniesPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasCommunities applies the HasEdge predicate on the "communities" edge.
+func HasCommunities() predicate.Area {
+	return predicate.Area(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, CommunitiesTable, CommunitiesPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCommunitiesWith applies the HasEdge predicate on the "communities" edge with a given conditions (other predicates).
+func HasCommunitiesWith(preds ...predicate.Community) predicate.Area {
+	return predicate.Area(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CommunitiesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, CommunitiesTable, CommunitiesPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Area) predicate.Area {
 	return predicate.Area(func(s *sql.Selector) {

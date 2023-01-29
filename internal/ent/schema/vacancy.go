@@ -43,5 +43,6 @@ func (Vacancy) Edges() []ent.Edge {
 			Ref("vacancies"),
 		edge.From("areas", Area.Type).
 			Ref("vacancies"),
+		edge.To("companies", Company.Type),
 	}
 }

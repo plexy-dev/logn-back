@@ -20,6 +20,33 @@ var (
 		Columns:    AreasColumns,
 		PrimaryKey: []*schema.Column{AreasColumns[0]},
 	}
+	// CommunitiesColumns holds the columns for the "communities" table.
+	CommunitiesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true, Size: 30},
+		{Name: "about", Type: field.TypeString, Unique: true, Size: 1000},
+		{Name: "members", Type: field.TypeInt},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// CommunitiesTable holds the schema information for the "communities" table.
+	CommunitiesTable = &schema.Table{
+		Name:       "communities",
+		Columns:    CommunitiesColumns,
+		PrimaryKey: []*schema.Column{CommunitiesColumns[0]},
+	}
+	// CompaniesColumns holds the columns for the "companies" table.
+	CompaniesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true, Size: 50},
+		{Name: "employ", Type: field.TypeInt},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// CompaniesTable holds the schema information for the "companies" table.
+	CompaniesTable = &schema.Table{
+		Name:       "companies",
+		Columns:    CompaniesColumns,
+		PrimaryKey: []*schema.Column{CompaniesColumns[0]},
+	}
 	// LocationsColumns holds the columns for the "locations" table.
 	LocationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -31,6 +58,47 @@ var (
 		Name:       "locations",
 		Columns:    LocationsColumns,
 		PrimaryKey: []*schema.Column{LocationsColumns[0]},
+	}
+	// PasswordsColumns holds the columns for the "passwords" table.
+	PasswordsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "hash", Type: field.TypeString},
+		{Name: "salt", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// PasswordsTable holds the schema information for the "passwords" table.
+	PasswordsTable = &schema.Table{
+		Name:       "passwords",
+		Columns:    PasswordsColumns,
+		PrimaryKey: []*schema.Column{PasswordsColumns[0]},
+	}
+	// RolesColumns holds the columns for the "roles" table.
+	RolesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true, Size: 15},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// RolesTable holds the schema information for the "roles" table.
+	RolesTable = &schema.Table{
+		Name:       "roles",
+		Columns:    RolesColumns,
+		PrimaryKey: []*schema.Column{RolesColumns[0]},
+	}
+	// SocialsColumns holds the columns for the "socials" table.
+	SocialsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "fb", Type: field.TypeString, Unique: true, Nullable: true, Size: 100},
+		{Name: "twitter", Type: field.TypeString, Unique: true, Nullable: true, Size: 100},
+		{Name: "discord", Type: field.TypeString, Unique: true, Nullable: true, Size: 100},
+		{Name: "slack", Type: field.TypeString, Unique: true, Nullable: true, Size: 100},
+		{Name: "other", Type: field.TypeString, Unique: true, Nullable: true, Size: 100},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// SocialsTable holds the schema information for the "socials" table.
+	SocialsTable = &schema.Table{
+		Name:       "socials",
+		Columns:    SocialsColumns,
+		PrimaryKey: []*schema.Column{SocialsColumns[0]},
 	}
 	// TechnologiesColumns holds the columns for the "technologies" table.
 	TechnologiesColumns = []*schema.Column{
@@ -79,6 +147,23 @@ var (
 			},
 		},
 	}
+	// UsersColumns holds the columns for the "users" table.
+	UsersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Size: 15},
+		{Name: "surname", Type: field.TypeString, Size: 15},
+		{Name: "email", Type: field.TypeString, Unique: true, Size: 50},
+		{Name: "birth_day", Type: field.TypeInt},
+		{Name: "birth_month", Type: field.TypeInt},
+		{Name: "birth_year", Type: field.TypeInt},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// UsersTable holds the schema information for the "users" table.
+	UsersTable = &schema.Table{
+		Name:       "users",
+		Columns:    UsersColumns,
+		PrimaryKey: []*schema.Column{UsersColumns[0]},
+	}
 	// VacanciesColumns holds the columns for the "vacancies" table.
 	VacanciesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -122,6 +207,131 @@ var (
 			},
 		},
 	}
+	// AreaCompaniesColumns holds the columns for the "area_companies" table.
+	AreaCompaniesColumns = []*schema.Column{
+		{Name: "area_id", Type: field.TypeInt},
+		{Name: "company_id", Type: field.TypeInt},
+	}
+	// AreaCompaniesTable holds the schema information for the "area_companies" table.
+	AreaCompaniesTable = &schema.Table{
+		Name:       "area_companies",
+		Columns:    AreaCompaniesColumns,
+		PrimaryKey: []*schema.Column{AreaCompaniesColumns[0], AreaCompaniesColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "area_companies_area_id",
+				Columns:    []*schema.Column{AreaCompaniesColumns[0]},
+				RefColumns: []*schema.Column{AreasColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "area_companies_company_id",
+				Columns:    []*schema.Column{AreaCompaniesColumns[1]},
+				RefColumns: []*schema.Column{CompaniesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// AreaCommunitiesColumns holds the columns for the "area_communities" table.
+	AreaCommunitiesColumns = []*schema.Column{
+		{Name: "area_id", Type: field.TypeInt},
+		{Name: "community_id", Type: field.TypeInt},
+	}
+	// AreaCommunitiesTable holds the schema information for the "area_communities" table.
+	AreaCommunitiesTable = &schema.Table{
+		Name:       "area_communities",
+		Columns:    AreaCommunitiesColumns,
+		PrimaryKey: []*schema.Column{AreaCommunitiesColumns[0], AreaCommunitiesColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "area_communities_area_id",
+				Columns:    []*schema.Column{AreaCommunitiesColumns[0]},
+				RefColumns: []*schema.Column{AreasColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "area_communities_community_id",
+				Columns:    []*schema.Column{AreaCommunitiesColumns[1]},
+				RefColumns: []*schema.Column{CommunitiesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// CommunityUsersColumns holds the columns for the "community_users" table.
+	CommunityUsersColumns = []*schema.Column{
+		{Name: "community_id", Type: field.TypeInt},
+		{Name: "user_id", Type: field.TypeInt},
+	}
+	// CommunityUsersTable holds the schema information for the "community_users" table.
+	CommunityUsersTable = &schema.Table{
+		Name:       "community_users",
+		Columns:    CommunityUsersColumns,
+		PrimaryKey: []*schema.Column{CommunityUsersColumns[0], CommunityUsersColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "community_users_community_id",
+				Columns:    []*schema.Column{CommunityUsersColumns[0]},
+				RefColumns: []*schema.Column{CommunitiesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "community_users_user_id",
+				Columns:    []*schema.Column{CommunityUsersColumns[1]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// CompanyUsersColumns holds the columns for the "company_users" table.
+	CompanyUsersColumns = []*schema.Column{
+		{Name: "company_id", Type: field.TypeInt},
+		{Name: "user_id", Type: field.TypeInt},
+	}
+	// CompanyUsersTable holds the schema information for the "company_users" table.
+	CompanyUsersTable = &schema.Table{
+		Name:       "company_users",
+		Columns:    CompanyUsersColumns,
+		PrimaryKey: []*schema.Column{CompanyUsersColumns[0], CompanyUsersColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "company_users_company_id",
+				Columns:    []*schema.Column{CompanyUsersColumns[0]},
+				RefColumns: []*schema.Column{CompaniesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "company_users_user_id",
+				Columns:    []*schema.Column{CompanyUsersColumns[1]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// CompanyCommunitiesColumns holds the columns for the "company_communities" table.
+	CompanyCommunitiesColumns = []*schema.Column{
+		{Name: "company_id", Type: field.TypeInt},
+		{Name: "community_id", Type: field.TypeInt},
+	}
+	// CompanyCommunitiesTable holds the schema information for the "company_communities" table.
+	CompanyCommunitiesTable = &schema.Table{
+		Name:       "company_communities",
+		Columns:    CompanyCommunitiesColumns,
+		PrimaryKey: []*schema.Column{CompanyCommunitiesColumns[0], CompanyCommunitiesColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "company_communities_company_id",
+				Columns:    []*schema.Column{CompanyCommunitiesColumns[0]},
+				RefColumns: []*schema.Column{CompaniesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "company_communities_community_id",
+				Columns:    []*schema.Column{CompanyCommunitiesColumns[1]},
+				RefColumns: []*schema.Column{CommunitiesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// LocationVacanciesColumns holds the columns for the "location_vacancies" table.
 	LocationVacanciesColumns = []*schema.Column{
 		{Name: "location_id", Type: field.TypeInt},
@@ -147,15 +357,182 @@ var (
 			},
 		},
 	}
+	// PasswordUsersColumns holds the columns for the "password_users" table.
+	PasswordUsersColumns = []*schema.Column{
+		{Name: "password_id", Type: field.TypeInt},
+		{Name: "user_id", Type: field.TypeInt},
+	}
+	// PasswordUsersTable holds the schema information for the "password_users" table.
+	PasswordUsersTable = &schema.Table{
+		Name:       "password_users",
+		Columns:    PasswordUsersColumns,
+		PrimaryKey: []*schema.Column{PasswordUsersColumns[0], PasswordUsersColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "password_users_password_id",
+				Columns:    []*schema.Column{PasswordUsersColumns[0]},
+				RefColumns: []*schema.Column{PasswordsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "password_users_user_id",
+				Columns:    []*schema.Column{PasswordUsersColumns[1]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// RoleUsersColumns holds the columns for the "role_users" table.
+	RoleUsersColumns = []*schema.Column{
+		{Name: "role_id", Type: field.TypeInt},
+		{Name: "user_id", Type: field.TypeInt},
+	}
+	// RoleUsersTable holds the schema information for the "role_users" table.
+	RoleUsersTable = &schema.Table{
+		Name:       "role_users",
+		Columns:    RoleUsersColumns,
+		PrimaryKey: []*schema.Column{RoleUsersColumns[0], RoleUsersColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "role_users_role_id",
+				Columns:    []*schema.Column{RoleUsersColumns[0]},
+				RefColumns: []*schema.Column{RolesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "role_users_user_id",
+				Columns:    []*schema.Column{RoleUsersColumns[1]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// RoleCompaniesColumns holds the columns for the "role_companies" table.
+	RoleCompaniesColumns = []*schema.Column{
+		{Name: "role_id", Type: field.TypeInt},
+		{Name: "company_id", Type: field.TypeInt},
+	}
+	// RoleCompaniesTable holds the schema information for the "role_companies" table.
+	RoleCompaniesTable = &schema.Table{
+		Name:       "role_companies",
+		Columns:    RoleCompaniesColumns,
+		PrimaryKey: []*schema.Column{RoleCompaniesColumns[0], RoleCompaniesColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "role_companies_role_id",
+				Columns:    []*schema.Column{RoleCompaniesColumns[0]},
+				RefColumns: []*schema.Column{RolesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "role_companies_company_id",
+				Columns:    []*schema.Column{RoleCompaniesColumns[1]},
+				RefColumns: []*schema.Column{CompaniesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// SocialCompaniesColumns holds the columns for the "social_companies" table.
+	SocialCompaniesColumns = []*schema.Column{
+		{Name: "social_id", Type: field.TypeInt},
+		{Name: "company_id", Type: field.TypeInt},
+	}
+	// SocialCompaniesTable holds the schema information for the "social_companies" table.
+	SocialCompaniesTable = &schema.Table{
+		Name:       "social_companies",
+		Columns:    SocialCompaniesColumns,
+		PrimaryKey: []*schema.Column{SocialCompaniesColumns[0], SocialCompaniesColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "social_companies_social_id",
+				Columns:    []*schema.Column{SocialCompaniesColumns[0]},
+				RefColumns: []*schema.Column{SocialsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "social_companies_company_id",
+				Columns:    []*schema.Column{SocialCompaniesColumns[1]},
+				RefColumns: []*schema.Column{CompaniesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// SocialCommunitiesColumns holds the columns for the "social_communities" table.
+	SocialCommunitiesColumns = []*schema.Column{
+		{Name: "social_id", Type: field.TypeInt},
+		{Name: "community_id", Type: field.TypeInt},
+	}
+	// SocialCommunitiesTable holds the schema information for the "social_communities" table.
+	SocialCommunitiesTable = &schema.Table{
+		Name:       "social_communities",
+		Columns:    SocialCommunitiesColumns,
+		PrimaryKey: []*schema.Column{SocialCommunitiesColumns[0], SocialCommunitiesColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "social_communities_social_id",
+				Columns:    []*schema.Column{SocialCommunitiesColumns[0]},
+				RefColumns: []*schema.Column{SocialsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "social_communities_community_id",
+				Columns:    []*schema.Column{SocialCommunitiesColumns[1]},
+				RefColumns: []*schema.Column{CommunitiesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// VacancyCompaniesColumns holds the columns for the "vacancy_companies" table.
+	VacancyCompaniesColumns = []*schema.Column{
+		{Name: "vacancy_id", Type: field.TypeInt},
+		{Name: "company_id", Type: field.TypeInt},
+	}
+	// VacancyCompaniesTable holds the schema information for the "vacancy_companies" table.
+	VacancyCompaniesTable = &schema.Table{
+		Name:       "vacancy_companies",
+		Columns:    VacancyCompaniesColumns,
+		PrimaryKey: []*schema.Column{VacancyCompaniesColumns[0], VacancyCompaniesColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "vacancy_companies_vacancy_id",
+				Columns:    []*schema.Column{VacancyCompaniesColumns[0]},
+				RefColumns: []*schema.Column{VacanciesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "vacancy_companies_company_id",
+				Columns:    []*schema.Column{VacancyCompaniesColumns[1]},
+				RefColumns: []*schema.Column{CompaniesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AreasTable,
+		CommunitiesTable,
+		CompaniesTable,
 		LocationsTable,
+		PasswordsTable,
+		RolesTable,
+		SocialsTable,
 		TechnologiesTable,
 		TechnologyLevelsTable,
+		UsersTable,
 		VacanciesTable,
 		AreaVacanciesTable,
+		AreaCompaniesTable,
+		AreaCommunitiesTable,
+		CommunityUsersTable,
+		CompanyUsersTable,
+		CompanyCommunitiesTable,
 		LocationVacanciesTable,
+		PasswordUsersTable,
+		RoleUsersTable,
+		RoleCompaniesTable,
+		SocialCompaniesTable,
+		SocialCommunitiesTable,
+		VacancyCompaniesTable,
 	}
 )
 
@@ -164,6 +541,28 @@ func init() {
 	TechnologyLevelsTable.ForeignKeys[1].RefTable = VacanciesTable
 	AreaVacanciesTable.ForeignKeys[0].RefTable = AreasTable
 	AreaVacanciesTable.ForeignKeys[1].RefTable = VacanciesTable
+	AreaCompaniesTable.ForeignKeys[0].RefTable = AreasTable
+	AreaCompaniesTable.ForeignKeys[1].RefTable = CompaniesTable
+	AreaCommunitiesTable.ForeignKeys[0].RefTable = AreasTable
+	AreaCommunitiesTable.ForeignKeys[1].RefTable = CommunitiesTable
+	CommunityUsersTable.ForeignKeys[0].RefTable = CommunitiesTable
+	CommunityUsersTable.ForeignKeys[1].RefTable = UsersTable
+	CompanyUsersTable.ForeignKeys[0].RefTable = CompaniesTable
+	CompanyUsersTable.ForeignKeys[1].RefTable = UsersTable
+	CompanyCommunitiesTable.ForeignKeys[0].RefTable = CompaniesTable
+	CompanyCommunitiesTable.ForeignKeys[1].RefTable = CommunitiesTable
 	LocationVacanciesTable.ForeignKeys[0].RefTable = LocationsTable
 	LocationVacanciesTable.ForeignKeys[1].RefTable = VacanciesTable
+	PasswordUsersTable.ForeignKeys[0].RefTable = PasswordsTable
+	PasswordUsersTable.ForeignKeys[1].RefTable = UsersTable
+	RoleUsersTable.ForeignKeys[0].RefTable = RolesTable
+	RoleUsersTable.ForeignKeys[1].RefTable = UsersTable
+	RoleCompaniesTable.ForeignKeys[0].RefTable = RolesTable
+	RoleCompaniesTable.ForeignKeys[1].RefTable = CompaniesTable
+	SocialCompaniesTable.ForeignKeys[0].RefTable = SocialsTable
+	SocialCompaniesTable.ForeignKeys[1].RefTable = CompaniesTable
+	SocialCommunitiesTable.ForeignKeys[0].RefTable = SocialsTable
+	SocialCommunitiesTable.ForeignKeys[1].RefTable = CommunitiesTable
+	VacancyCompaniesTable.ForeignKeys[0].RefTable = VacanciesTable
+	VacancyCompaniesTable.ForeignKeys[1].RefTable = CompaniesTable
 }

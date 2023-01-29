@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  logn:
+  logn2:
     build:
       context: .
     container_name: logn
@@ -28,12 +28,12 @@ services:
       - "5432"
     networks:
       - postgres
-    restart: unless-stopped
+    restart: always
 
 networks:
   postgres:
     driver: bridge
 
 volumes:
-  logn:
+  logn2:
   postgres:

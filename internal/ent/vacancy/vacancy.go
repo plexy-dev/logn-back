@@ -33,6 +33,8 @@ const (
 	EdgeLocations = "locations"
 	// EdgeAreas holds the string denoting the areas edge name in mutations.
 	EdgeAreas = "areas"
+	// EdgeCompanies holds the string denoting the companies edge name in mutations.
+	EdgeCompanies = "companies"
 	// EdgeTechnologyLevels holds the string denoting the technology_levels edge name in mutations.
 	EdgeTechnologyLevels = "technology_levels"
 	// Table holds the table name of the vacancy in the database.
@@ -52,6 +54,11 @@ const (
 	// AreasInverseTable is the table name for the Area entity.
 	// It exists in this package in order to avoid circular dependency with the "area" package.
 	AreasInverseTable = "areas"
+	// CompaniesTable is the table that holds the companies relation/edge. The primary key declared below.
+	CompaniesTable = "vacancy_companies"
+	// CompaniesInverseTable is the table name for the Company entity.
+	// It exists in this package in order to avoid circular dependency with the "company" package.
+	CompaniesInverseTable = "companies"
 	// TechnologyLevelsTable is the table that holds the technology_levels relation/edge.
 	TechnologyLevelsTable = "technology_levels"
 	// TechnologyLevelsInverseTable is the table name for the TechnologyLevel entity.
@@ -84,6 +91,9 @@ var (
 	// AreasPrimaryKey and AreasColumn2 are the table columns denoting the
 	// primary key for the areas relation (M2M).
 	AreasPrimaryKey = []string{"area_id", "vacancy_id"}
+	// CompaniesPrimaryKey and CompaniesColumn2 are the table columns denoting the
+	// primary key for the companies relation (M2M).
+	CompaniesPrimaryKey = []string{"vacancy_id", "company_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

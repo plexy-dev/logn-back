@@ -14,12 +14,24 @@ type Tx struct {
 	config
 	// Area is the client for interacting with the Area builders.
 	Area *AreaClient
+	// Community is the client for interacting with the Community builders.
+	Community *CommunityClient
+	// Company is the client for interacting with the Company builders.
+	Company *CompanyClient
 	// Location is the client for interacting with the Location builders.
 	Location *LocationClient
+	// Password is the client for interacting with the Password builders.
+	Password *PasswordClient
+	// Role is the client for interacting with the Role builders.
+	Role *RoleClient
+	// Social is the client for interacting with the Social builders.
+	Social *SocialClient
 	// Technology is the client for interacting with the Technology builders.
 	Technology *TechnologyClient
 	// TechnologyLevel is the client for interacting with the TechnologyLevel builders.
 	TechnologyLevel *TechnologyLevelClient
+	// User is the client for interacting with the User builders.
+	User *UserClient
 	// Vacancy is the client for interacting with the Vacancy builders.
 	Vacancy *VacancyClient
 
@@ -154,9 +166,15 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Area = NewAreaClient(tx.config)
+	tx.Community = NewCommunityClient(tx.config)
+	tx.Company = NewCompanyClient(tx.config)
 	tx.Location = NewLocationClient(tx.config)
+	tx.Password = NewPasswordClient(tx.config)
+	tx.Role = NewRoleClient(tx.config)
+	tx.Social = NewSocialClient(tx.config)
 	tx.Technology = NewTechnologyClient(tx.config)
 	tx.TechnologyLevel = NewTechnologyLevelClient(tx.config)
+	tx.User = NewUserClient(tx.config)
 	tx.Vacancy = NewVacancyClient(tx.config)
 }
 

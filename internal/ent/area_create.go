@@ -11,6 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/logn-soft/logn-back/internal/ent/area"
+	"github.com/logn-soft/logn-back/internal/ent/community"
+	"github.com/logn-soft/logn-back/internal/ent/company"
 	"github.com/logn-soft/logn-back/internal/ent/vacancy"
 )
 
@@ -54,6 +56,36 @@ func (ac *AreaCreate) AddVacancies(v ...*Vacancy) *AreaCreate {
 		ids[i] = v[i].ID
 	}
 	return ac.AddVacancyIDs(ids...)
+}
+
+// AddCompanyIDs adds the "companies" edge to the Company entity by IDs.
+func (ac *AreaCreate) AddCompanyIDs(ids ...int) *AreaCreate {
+	ac.mutation.AddCompanyIDs(ids...)
+	return ac
+}
+
+// AddCompanies adds the "companies" edges to the Company entity.
+func (ac *AreaCreate) AddCompanies(c ...*Company) *AreaCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return ac.AddCompanyIDs(ids...)
+}
+
+// AddCommunityIDs adds the "communities" edge to the Community entity by IDs.
+func (ac *AreaCreate) AddCommunityIDs(ids ...int) *AreaCreate {
+	ac.mutation.AddCommunityIDs(ids...)
+	return ac
+}
+
+// AddCommunities adds the "communities" edges to the Community entity.
+func (ac *AreaCreate) AddCommunities(c ...*Community) *AreaCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return ac.AddCommunityIDs(ids...)
 }
 
 // Mutation returns the AreaMutation object of the builder.
@@ -161,6 +193,44 @@ func (ac *AreaCreate) createSpec() (*Area, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: vacancy.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.CompaniesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   area.CompaniesTable,
+			Columns: area.CompaniesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: company.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.CommunitiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   area.CommunitiesTable,
+			Columns: area.CommunitiesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: community.FieldID,
 				},
 			},
 		}

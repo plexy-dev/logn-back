@@ -486,6 +486,33 @@ func HasAreasWith(preds ...predicate.Area) predicate.Vacancy {
 	})
 }
 
+// HasCompanies applies the HasEdge predicate on the "companies" edge.
+func HasCompanies() predicate.Vacancy {
+	return predicate.Vacancy(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, CompaniesTable, CompaniesPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCompaniesWith applies the HasEdge predicate on the "companies" edge with a given conditions (other predicates).
+func HasCompaniesWith(preds ...predicate.Company) predicate.Vacancy {
+	return predicate.Vacancy(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CompaniesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, CompaniesTable, CompaniesPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasTechnologyLevels applies the HasEdge predicate on the "technology_levels" edge.
 func HasTechnologyLevels() predicate.Vacancy {
 	return predicate.Vacancy(func(s *sql.Selector) {

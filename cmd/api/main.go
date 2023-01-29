@@ -2,14 +2,14 @@ package main
 
 import (
 	"context"
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5"
 	"github.com/logn-soft/logn-back/internal/ent"
 	"log"
 	"net/http"
 )
 
 func main() {
-	dsn := "postgresql://root:secret@postgres:5432/logn?sslmode=disable"
+	dsn := "postgresql://root:secret@postgres:5432/logn2?sslmode=disable"
 	client, err := ent.Open("postgres", dsn)
 	if err != nil {
 		log.Fatalf("cant connect to db %v", err)

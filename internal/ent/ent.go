@@ -12,9 +12,15 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/logn-soft/logn-back/internal/ent/area"
+	"github.com/logn-soft/logn-back/internal/ent/community"
+	"github.com/logn-soft/logn-back/internal/ent/company"
 	"github.com/logn-soft/logn-back/internal/ent/location"
+	"github.com/logn-soft/logn-back/internal/ent/password"
+	"github.com/logn-soft/logn-back/internal/ent/role"
+	"github.com/logn-soft/logn-back/internal/ent/social"
 	"github.com/logn-soft/logn-back/internal/ent/technology"
 	"github.com/logn-soft/logn-back/internal/ent/technologylevel"
+	"github.com/logn-soft/logn-back/internal/ent/user"
 	"github.com/logn-soft/logn-back/internal/ent/vacancy"
 )
 
@@ -44,9 +50,15 @@ type OrderFunc func(*sql.Selector)
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
 		area.Table:            area.ValidColumn,
+		community.Table:       community.ValidColumn,
+		company.Table:         company.ValidColumn,
 		location.Table:        location.ValidColumn,
+		password.Table:        password.ValidColumn,
+		role.Table:            role.ValidColumn,
+		social.Table:          social.ValidColumn,
 		technology.Table:      technology.ValidColumn,
 		technologylevel.Table: technologylevel.ValidColumn,
+		user.Table:            user.ValidColumn,
 		vacancy.Table:         vacancy.ValidColumn,
 	}
 	check, ok := checks[table]

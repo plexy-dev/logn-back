@@ -17,6 +17,10 @@ const (
 	FieldCreatedAt = "created_at"
 	// EdgeVacancies holds the string denoting the vacancies edge name in mutations.
 	EdgeVacancies = "vacancies"
+	// EdgeCompanies holds the string denoting the companies edge name in mutations.
+	EdgeCompanies = "companies"
+	// EdgeCommunities holds the string denoting the communities edge name in mutations.
+	EdgeCommunities = "communities"
 	// Table holds the table name of the area in the database.
 	Table = "areas"
 	// VacanciesTable is the table that holds the vacancies relation/edge. The primary key declared below.
@@ -24,6 +28,16 @@ const (
 	// VacanciesInverseTable is the table name for the Vacancy entity.
 	// It exists in this package in order to avoid circular dependency with the "vacancy" package.
 	VacanciesInverseTable = "vacancies"
+	// CompaniesTable is the table that holds the companies relation/edge. The primary key declared below.
+	CompaniesTable = "area_companies"
+	// CompaniesInverseTable is the table name for the Company entity.
+	// It exists in this package in order to avoid circular dependency with the "company" package.
+	CompaniesInverseTable = "companies"
+	// CommunitiesTable is the table that holds the communities relation/edge. The primary key declared below.
+	CommunitiesTable = "area_communities"
+	// CommunitiesInverseTable is the table name for the Community entity.
+	// It exists in this package in order to avoid circular dependency with the "community" package.
+	CommunitiesInverseTable = "communities"
 )
 
 // Columns holds all SQL columns for area fields.
@@ -37,6 +51,12 @@ var (
 	// VacanciesPrimaryKey and VacanciesColumn2 are the table columns denoting the
 	// primary key for the vacancies relation (M2M).
 	VacanciesPrimaryKey = []string{"area_id", "vacancy_id"}
+	// CompaniesPrimaryKey and CompaniesColumn2 are the table columns denoting the
+	// primary key for the companies relation (M2M).
+	CompaniesPrimaryKey = []string{"area_id", "company_id"}
+	// CommunitiesPrimaryKey and CommunitiesColumn2 are the table columns denoting the
+	// primary key for the communities relation (M2M).
+	CommunitiesPrimaryKey = []string{"area_id", "community_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

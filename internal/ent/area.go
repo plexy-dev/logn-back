@@ -29,9 +29,13 @@ type Area struct {
 type AreaEdges struct {
 	// Vacancies holds the value of the vacancies edge.
 	Vacancies []*Vacancy `json:"vacancies,omitempty"`
+	// Companies holds the value of the companies edge.
+	Companies []*Company `json:"companies,omitempty"`
+	// Communities holds the value of the communities edge.
+	Communities []*Community `json:"communities,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
 }
 
 // VacanciesOrErr returns the Vacancies value or an error if the edge
@@ -41,6 +45,24 @@ func (e AreaEdges) VacanciesOrErr() ([]*Vacancy, error) {
 		return e.Vacancies, nil
 	}
 	return nil, &NotLoadedError{edge: "vacancies"}
+}
+
+// CompaniesOrErr returns the Companies value or an error if the edge
+// was not loaded in eager-loading.
+func (e AreaEdges) CompaniesOrErr() ([]*Company, error) {
+	if e.loadedTypes[1] {
+		return e.Companies, nil
+	}
+	return nil, &NotLoadedError{edge: "companies"}
+}
+
+// CommunitiesOrErr returns the Communities value or an error if the edge
+// was not loaded in eager-loading.
+func (e AreaEdges) CommunitiesOrErr() ([]*Community, error) {
+	if e.loadedTypes[2] {
+		return e.Communities, nil
+	}
+	return nil, &NotLoadedError{edge: "communities"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -95,6 +117,16 @@ func (a *Area) assignValues(columns []string, values []any) error {
 // QueryVacancies queries the "vacancies" edge of the Area entity.
 func (a *Area) QueryVacancies() *VacancyQuery {
 	return NewAreaClient(a.config).QueryVacancies(a)
+}
+
+// QueryCompanies queries the "companies" edge of the Area entity.
+func (a *Area) QueryCompanies() *CompanyQuery {
+	return NewAreaClient(a.config).QueryCompanies(a)
+}
+
+// QueryCommunities queries the "communities" edge of the Area entity.
+func (a *Area) QueryCommunities() *CommunityQuery {
+	return NewAreaClient(a.config).QueryCommunities(a)
 }
 
 // Update returns a builder for updating this Area.

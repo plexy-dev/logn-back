@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/logn-soft/logn-back/internal/ent/area"
+	"github.com/logn-soft/logn-back/internal/ent/company"
 	"github.com/logn-soft/logn-back/internal/ent/location"
 	"github.com/logn-soft/logn-back/internal/ent/technology"
 	"github.com/logn-soft/logn-back/internal/ent/technologylevel"
@@ -123,6 +124,21 @@ func (vc *VacancyCreate) AddAreas(a ...*Area) *VacancyCreate {
 		ids[i] = a[i].ID
 	}
 	return vc.AddAreaIDs(ids...)
+}
+
+// AddCompanyIDs adds the "companies" edge to the Company entity by IDs.
+func (vc *VacancyCreate) AddCompanyIDs(ids ...int) *VacancyCreate {
+	vc.mutation.AddCompanyIDs(ids...)
+	return vc
+}
+
+// AddCompanies adds the "companies" edges to the Company entity.
+func (vc *VacancyCreate) AddCompanies(c ...*Company) *VacancyCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return vc.AddCompanyIDs(ids...)
 }
 
 // AddTechnologyLevelIDs adds the "technology_levels" edge to the TechnologyLevel entity by IDs.
@@ -339,6 +355,25 @@ func (vc *VacancyCreate) createSpec() (*Vacancy, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: area.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := vc.mutation.CompaniesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   vacancy.CompaniesTable,
+			Columns: vacancy.CompaniesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: company.FieldID,
 				},
 			},
 		}

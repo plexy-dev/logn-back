@@ -28,16 +28,28 @@ type config struct {
 type (
 	hooks struct {
 		Area            []ent.Hook
+		Community       []ent.Hook
+		Company         []ent.Hook
 		Location        []ent.Hook
+		Password        []ent.Hook
+		Role            []ent.Hook
+		Social          []ent.Hook
 		Technology      []ent.Hook
 		TechnologyLevel []ent.Hook
+		User            []ent.Hook
 		Vacancy         []ent.Hook
 	}
 	inters struct {
 		Area            []ent.Interceptor
+		Community       []ent.Interceptor
+		Company         []ent.Interceptor
 		Location        []ent.Interceptor
+		Password        []ent.Interceptor
+		Role            []ent.Interceptor
+		Social          []ent.Interceptor
 		Technology      []ent.Interceptor
 		TechnologyLevel []ent.Interceptor
+		User            []ent.Interceptor
 		Vacancy         []ent.Interceptor
 	}
 )

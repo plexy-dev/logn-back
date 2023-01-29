@@ -45,11 +45,13 @@ type VacancyEdges struct {
 	Locations []*Location `json:"locations,omitempty"`
 	// Areas holds the value of the areas edge.
 	Areas []*Area `json:"areas,omitempty"`
+	// Companies holds the value of the companies edge.
+	Companies []*Company `json:"companies,omitempty"`
 	// TechnologyLevels holds the value of the technology_levels edge.
 	TechnologyLevels []*TechnologyLevel `json:"technology_levels,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // TechnologiesOrErr returns the Technologies value or an error if the edge
@@ -79,10 +81,19 @@ func (e VacancyEdges) AreasOrErr() ([]*Area, error) {
 	return nil, &NotLoadedError{edge: "areas"}
 }
 
+// CompaniesOrErr returns the Companies value or an error if the edge
+// was not loaded in eager-loading.
+func (e VacancyEdges) CompaniesOrErr() ([]*Company, error) {
+	if e.loadedTypes[3] {
+		return e.Companies, nil
+	}
+	return nil, &NotLoadedError{edge: "companies"}
+}
+
 // TechnologyLevelsOrErr returns the TechnologyLevels value or an error if the edge
 // was not loaded in eager-loading.
 func (e VacancyEdges) TechnologyLevelsOrErr() ([]*TechnologyLevel, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.TechnologyLevels, nil
 	}
 	return nil, &NotLoadedError{edge: "technology_levels"}
@@ -188,6 +199,11 @@ func (v *Vacancy) QueryLocations() *LocationQuery {
 // QueryAreas queries the "areas" edge of the Vacancy entity.
 func (v *Vacancy) QueryAreas() *AreaQuery {
 	return NewVacancyClient(v.config).QueryAreas(v)
+}
+
+// QueryCompanies queries the "companies" edge of the Vacancy entity.
+func (v *Vacancy) QueryCompanies() *CompanyQuery {
+	return NewVacancyClient(v.config).QueryCompanies(v)
 }
 
 // QueryTechnologyLevels queries the "technology_levels" edge of the Vacancy entity.

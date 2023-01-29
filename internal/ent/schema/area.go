@@ -29,5 +29,7 @@ func (Area) Fields() []ent.Field {
 func (Area) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("vacancies", Vacancy.Type),
+		edge.To("companies", Company.Type),
+		edge.To("communities", Community.Type),
 	}
 }

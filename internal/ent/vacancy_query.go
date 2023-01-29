@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/logn-soft/logn-back/internal/ent/area"
+	"github.com/logn-soft/logn-back/internal/ent/company"
 	"github.com/logn-soft/logn-back/internal/ent/location"
 	"github.com/logn-soft/logn-back/internal/ent/predicate"
 	"github.com/logn-soft/logn-back/internal/ent/technology"
@@ -29,6 +30,7 @@ type VacancyQuery struct {
 	withTechnologies     *TechnologyQuery
 	withLocations        *LocationQuery
 	withAreas            *AreaQuery
+	withCompanies        *CompanyQuery
 	withTechnologyLevels *TechnologyLevelQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -125,6 +127,28 @@ func (vq *VacancyQuery) QueryAreas() *AreaQuery {
 			sqlgraph.From(vacancy.Table, vacancy.FieldID, selector),
 			sqlgraph.To(area.Table, area.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, vacancy.AreasTable, vacancy.AreasPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(vq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCompanies chains the current query on the "companies" edge.
+func (vq *VacancyQuery) QueryCompanies() *CompanyQuery {
+	query := (&CompanyClient{config: vq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := vq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := vq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(vacancy.Table, vacancy.FieldID, selector),
+			sqlgraph.To(company.Table, company.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, vacancy.CompaniesTable, vacancy.CompaniesPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(vq.driver.Dialect(), step)
 		return fromU, nil
@@ -347,6 +371,7 @@ func (vq *VacancyQuery) Clone() *VacancyQuery {
 		withTechnologies:     vq.withTechnologies.Clone(),
 		withLocations:        vq.withLocations.Clone(),
 		withAreas:            vq.withAreas.Clone(),
+		withCompanies:        vq.withCompanies.Clone(),
 		withTechnologyLevels: vq.withTechnologyLevels.Clone(),
 		// clone intermediate query.
 		sql:  vq.sql.Clone(),
@@ -384,6 +409,17 @@ func (vq *VacancyQuery) WithAreas(opts ...func(*AreaQuery)) *VacancyQuery {
 		opt(query)
 	}
 	vq.withAreas = query
+	return vq
+}
+
+// WithCompanies tells the query-builder to eager-load the nodes that are connected to
+// the "companies" edge. The optional arguments are used to configure the query builder of the edge.
+func (vq *VacancyQuery) WithCompanies(opts ...func(*CompanyQuery)) *VacancyQuery {
+	query := (&CompanyClient{config: vq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	vq.withCompanies = query
 	return vq
 }
 
@@ -476,10 +512,11 @@ func (vq *VacancyQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Vaca
 	var (
 		nodes       = []*Vacancy{}
 		_spec       = vq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			vq.withTechnologies != nil,
 			vq.withLocations != nil,
 			vq.withAreas != nil,
+			vq.withCompanies != nil,
 			vq.withTechnologyLevels != nil,
 		}
 	)
@@ -519,6 +556,13 @@ func (vq *VacancyQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Vaca
 		if err := vq.loadAreas(ctx, query, nodes,
 			func(n *Vacancy) { n.Edges.Areas = []*Area{} },
 			func(n *Vacancy, e *Area) { n.Edges.Areas = append(n.Edges.Areas, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := vq.withCompanies; query != nil {
+		if err := vq.loadCompanies(ctx, query, nodes,
+			func(n *Vacancy) { n.Edges.Companies = []*Company{} },
+			func(n *Vacancy, e *Company) { n.Edges.Companies = append(n.Edges.Companies, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -708,6 +752,67 @@ func (vq *VacancyQuery) loadAreas(ctx context.Context, query *AreaQuery, nodes [
 		nodes, ok := nids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected "areas" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (vq *VacancyQuery) loadCompanies(ctx context.Context, query *CompanyQuery, nodes []*Vacancy, init func(*Vacancy), assign func(*Vacancy, *Company)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Vacancy)
+	nids := make(map[int]map[*Vacancy]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(vacancy.CompaniesTable)
+		s.Join(joinT).On(s.C(company.FieldID), joinT.C(vacancy.CompaniesPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(vacancy.CompaniesPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(vacancy.CompaniesPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Vacancy]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Company](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "companies" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)

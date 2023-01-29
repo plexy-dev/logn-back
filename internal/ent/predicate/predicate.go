@@ -9,14 +9,32 @@ import (
 // Area is the predicate function for area builders.
 type Area func(*sql.Selector)
 
+// Community is the predicate function for community builders.
+type Community func(*sql.Selector)
+
+// Company is the predicate function for company builders.
+type Company func(*sql.Selector)
+
 // Location is the predicate function for location builders.
 type Location func(*sql.Selector)
+
+// Password is the predicate function for password builders.
+type Password func(*sql.Selector)
+
+// Role is the predicate function for role builders.
+type Role func(*sql.Selector)
+
+// Social is the predicate function for social builders.
+type Social func(*sql.Selector)
 
 // Technology is the predicate function for technology builders.
 type Technology func(*sql.Selector)
 
 // TechnologyLevel is the predicate function for technologylevel builders.
 type TechnologyLevel func(*sql.Selector)
+
+// User is the predicate function for user builders.
+type User func(*sql.Selector)
 
 // Vacancy is the predicate function for vacancy builders.
 type Vacancy func(*sql.Selector)
