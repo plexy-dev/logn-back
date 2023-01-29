@@ -1,6 +1,5 @@
 package schema
 
-import "C"
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
